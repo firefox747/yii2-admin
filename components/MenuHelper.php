@@ -167,6 +167,9 @@ class MenuHelper
     public static function parseRoute($route)
     {
         if (!empty($route)) {
+            if ($route[0] === '@') {
+                $route = str_replace('@'.\Yii::$app->id, '', $route);
+            }
             $url = [];
             $r = explode('&', $route);
             $url[0] = $r[0];

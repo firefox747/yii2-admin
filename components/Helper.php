@@ -26,7 +26,7 @@ class Helper
             self::$_routes = [];
             $manager = Configs::authManager();
             foreach ($manager->getPermissions() as $item) {
-                if ($item->name[0] === '/') {
+                if ($item->name[0] === '/' || $item->name[0] === '@') {
                     self::$_routes[$item->name] = $item->name;
                 }
             }
@@ -81,7 +81,7 @@ class Helper
                 $routes = static::getDefaultRoutes();
                 $manager = Configs::authManager();
                 foreach ($manager->getPermissionsByUser($userId) as $item) {
-                    if ($item->name[0] === '/') {
+                    if ($item->name[0] === '/' || $item->name === '@') {
                         $routes[$item->name] = true;
                     }
                 }
@@ -109,7 +109,6 @@ class Helper
         if ($config->onlyRegisteredRoute && !isset(static::getRegisteredRoutes()[$r])) {
             return true;
         }
-
         if ($user === null) {
             $user = Yii::$app->getUser();
         }
@@ -192,7 +191,6 @@ class Helper
         foreach ($items as $i => $item) {
             $url = ArrayHelper::getValue($item, 'url', '#');
             $allow = is_array($url) ? static::checkRoute($url[0], array_slice($url, 1), $user) : true;
-
             if (isset($item['items']) && is_array($item['items'])) {
                 $subItems = self::filterRecursive($item['items'], $user);
                 if (count($subItems)) {
