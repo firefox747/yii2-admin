@@ -52,7 +52,7 @@ class Helper
                     $permissions = array_merge($permissions, $manager->getPermissionsByRole($role));
                 }
                 foreach ($permissions as $item) {
-                    if ($item->name[0] === '/' || $item->name[0] === '@') {
+                    if ($item->name[0] === '/') {
                         self::$_defaultRoutes[$item->name] = true;
                     }
                 }
