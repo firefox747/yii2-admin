@@ -41,6 +41,8 @@ use mdm\admin\models\Menu;
  */
 class MenuHelper
 {
+    const CACHE_TAG = 'mdm.admin.menu';
+
     /**
      * Use to get assigned menu of user.
      * @param mixed $userId
@@ -221,5 +223,15 @@ class MenuHelper
         }
 
         return $result;
+    }
+
+    /**
+     * Use to invalidate cache.
+     */
+    public static function invalidate()
+    {
+        if (Configs::instance()->cache !== null) {
+            TagDependency::invalidate(Configs::instance()->cache, self::CACHE_TAG);
+        }
     }
 }
