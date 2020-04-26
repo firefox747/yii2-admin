@@ -5,6 +5,7 @@ namespace mdm\admin\components;
 use Yii;
 use yii\caching\TagDependency;
 use mdm\admin\models\Menu;
+use mdm\admin\Models\Route;
 
 /**
  * MenuHelper used to generate menu depend of user role.
@@ -41,8 +42,6 @@ use mdm\admin\models\Menu;
  */
 class MenuHelper
 {
-    const CACHE_TAG = 'mdm.admin.menu';
-
     /**
      * Use to get assigned menu of user.
      * @param mixed $userId
@@ -78,7 +77,7 @@ class MenuHelper
             $routes = $filter1 = $filter2 = [];
             if ($userId !== null) {
                 foreach ($manager->getPermissionsByUser($userId) as $name => $value) {
-                    if ($name[0] === '/' || $name[0] === '@') {
+		    if ($name[0] === Route::PREFIX_BASIC || $name[0] == Route::PREFIX_ADVANCED) {
                         if (substr($name, -2) === '/*') {
                             $name = substr($name, 0, -1);
                         }
@@ -88,7 +87,7 @@ class MenuHelper
             }
             foreach ($manager->defaultRoles as $role) {
                 foreach ($manager->getPermissionsByRole($role) as $name => $value) {
-                    if ($name[0] === '/' || $name[0] === '@') {
+		    if ($name[0] === Route::PREFIX_BASIC || $name[0] == Route::PREFIX_ADVANCED) {
                         if (substr($name, -2) === '/*') {
                             $name = substr($name, 0, -1);
                         }
@@ -169,9 +168,6 @@ class MenuHelper
     public static function parseRoute($route)
     {
         if (!empty($route)) {
-            if ($route[0] === '@') {
-                $route = str_replace('@'.\Yii::$app->id, '', $route);
-            }
             $url = [];
             $r = explode('&', $route);
             $url[0] = $r[0];
@@ -223,15 +219,5 @@ class MenuHelper
         }
 
         return $result;
-    }
-
-    /**
-     * Use to invalidate cache.
-     */
-    public static function invalidate()
-    {
-        if (Configs::instance()->cache !== null) {
-            TagDependency::invalidate(Configs::instance()->cache, self::CACHE_TAG);
-        }
     }
 }
