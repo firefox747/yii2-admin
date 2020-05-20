@@ -72,17 +72,20 @@ class Menu extends \yii\db\ActiveRecord
      */
     public function filterParent()
     {
-        $parent = $this->parent;
-        $db = static::getDb();
-        $query = (new Query)->select(['parent'])
-            ->from(static::tableName())
-            ->where('[[id]]=:id');
-        while ($parent) {
-            if ($this->id == $parent) {
-                $this->addError('parent_name', 'Loop detected.');
-                return;
+        $value = $this->parent_name;
+        $parent = self::findOne(['name' => $value]);
+        if ($parent) {
+            $id = $this->id;
+            $parent_id = $parent->id;
+            while ($parent) {
+                if ($parent->id == $id) {
+                    $this->addError('parent_name', 'Loop detected.');
+
+                    return;
+                }
+                $parent = $parent->menuParent;
             }
-            $parent = $query->params([':id' => $parent])->scalar($db);
+            $this->parent = $parent_id;
         }
     }
 
@@ -130,11 +133,12 @@ class Menu extends \yii\db\ActiveRecord
         if (self::$_routes === null) {
             self::$_routes = [];
             foreach (Configs::authManager()->getPermissions() as $name => $value) {
-                if ($name[0] === '/' && substr($name, -1) != '*') {
+                if (($name[0] === '/' || $name[0] === '@') && substr($name, -1) != '*') {
                     self::$_routes[] = $name;
                 }
             }
         }
+
         return self::$_routes;
     }
 

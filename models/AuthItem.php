@@ -61,7 +61,7 @@ class AuthItem extends Model
         return [
             [['ruleName'], 'checkRule'],
             [['name', 'type'], 'required'],
-            [['name'], 'unique', 'when' => function () {
+            [['name'], 'checkUnique', 'when' => function () {
                 return $this->isNewRecord || ($this->_item->name != $this->name);
             }],
             [['type'], 'integer'],
@@ -73,7 +73,7 @@ class AuthItem extends Model
     /**
      * Check role is unique
      */
-    public function unique()
+    public function checkUnique()
     {
         $authManager = Configs::authManager();
         $value = $this->name;
@@ -246,6 +246,7 @@ class AuthItem extends Model
     public function getItems()
     {
         $manager = Configs::authManager();
+        $advanced = Configs::instance()->advanced;
         $available = [];
         if ($this->type == Item::TYPE_ROLE) {
             foreach (array_keys($manager->getRoles()) as $name) {
@@ -253,12 +254,12 @@ class AuthItem extends Model
             }
         }
         foreach (array_keys($manager->getPermissions()) as $name) {
-            $available[$name] = $name[0] == '/' ? 'route' : 'permission';
+            $available[$name] = $name[0] == '/' || $advanced && $name[0] == '@' ? 'route' : 'permission';
         }
 
         $assigned = [];
         foreach ($manager->getChildren($this->_item->name) as $item) {
-            $assigned[$item->name] = $item->type == 1 ? 'role' : ($item->name[0] == '/' ? 'route' : 'permission');
+            $assigned[$item->name] = $item->type == 1 ? 'role' : ($item->name[0] == '/' || $advanced && $item->name[0] == '@' ? 'route' : 'permission');
             unset($available[$item->name]);
         }
         unset($available[$this->name]);
